@@ -982,6 +982,7 @@ module.exports = function($window) {
 			// First time rendering into a node clears it out
 			if (dom.vnodes == null) dom.textContent = ""
 			vnodes = Vnode.normalizeChildren(Array.isArray(vnodes) ? vnodes : [vnodes])
+			dom.vnode = vnodes[0];
 			updateNodes(dom, dom.vnodes, vnodes, hooks, null, namespace === "http://www.w3.org/1999/xhtml" ? undefined : namespace)
 			dom.vnodes = vnodes
 			// `document.activeElement` can return null: https://html.spec.whatwg.org/multipage/interaction.html#dom-document-activeelement

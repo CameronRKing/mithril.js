@@ -1,7 +1,24 @@
 "use strict"
 
 function Vnode(tag, key, attrs, children, text, dom) {
-	return {tag: tag, key: key, attrs: attrs, children: children, text: text, dom: dom, domSize: undefined, state: undefined, events: undefined, instance: undefined}
+	return {
+		tag: tag,
+		key: key,
+		attrs: attrs,
+		children: children,
+		text: text,
+		_dom: dom,
+		get dom() { return this._dom; },
+		set dom(val) { 
+			if (this._dom) delete this._dom.vnode; 
+			this._dom = val;
+			if (val) this._dom.vnode = this;
+		},
+		domSize: undefined,
+		state: undefined,
+		events: undefined,
+		instance: undefined
+	};
 }
 Vnode.normalize = function(node) {
 	if (Array.isArray(node)) return Vnode("[", undefined, undefined, Vnode.normalizeChildren(node), undefined, undefined)
