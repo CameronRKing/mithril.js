@@ -89,6 +89,12 @@ function hyperscript(selector) {
 
 	var vnode = hyperscriptVnode.apply(1, arguments)
 
+	try { throw new Error(); } catch(e) {
+		const match = e.stack.match(/\w+\.m\.js:\d+:\d+/);
+		if (!match) console.log(e.stack);
+		vnode.meta = { src: match[0] };
+	}
+
 	if (typeof selector === "string") {
 		vnode.children = Vnode.normalizeChildren(vnode.children)
 		if (selector !== "[") return execSelector(selectorCache[selector] || compileSelector(selector), vnode)
