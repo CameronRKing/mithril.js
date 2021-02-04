@@ -90,9 +90,15 @@ function hyperscript(selector) {
 	var vnode = hyperscriptVnode.apply(1, arguments)
 
 	try { throw new Error(); } catch(e) {
+		// hmm . . . I need to find a different way to do this
+		// the .m.js extension is a nice shortcut,
+		// but mithril components may be mounted wherever they need to be
+		// although, this problem would be solvable by the context API
+		// The reason I'm defining a local component in a plain .js file is to capture closure variables
+		// because I can't pass them as attrs in mount, which expects a component rather than a vnode
 		const match = e.stack.match(/\w+\.m\.js:\d+:\d+/);
 		if (!match) console.log(e.stack);
-		vnode.meta = { src: match[0] };
+		else vnode.meta = { src: match[0] };
 	}
 
 	if (typeof selector === "string") {
