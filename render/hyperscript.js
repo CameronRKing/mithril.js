@@ -96,6 +96,9 @@ function hyperscript(selector) {
 		// although, this problem would be solvable by the context API
 		// The reason I'm defining a local component in a plain .js file is to capture closure variables
 		// because I can't pass them as attrs in mount, which expects a component rather than a vnode
+
+		// snowpack adds a query string to file names, for cache-busting, I expect
+		e.stack = e.stack.replace(/\?mtime=\d+/, '');
 		const match = e.stack.match(/\w+\.m\.js:\d+:\d+/);
 		if (!match) console.log(e.stack);
 		else vnode.meta = { src: match[0] };
