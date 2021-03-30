@@ -59,4 +59,11 @@ m.findAll = (test, acc = [], node = null) => {
     return acc;
 }
 
+// stub functions to help autocomplete
+// logic is in mithil-rewrite snowpack plugin (happens at build-time)
+// though a run-time version would be a fine idea too
+// (to assist in rapid experimentation/prototyping in-browser)
+m.xhtml = (str) => str
+m.cmp = (obj) => obj;
+
 module.exports = m

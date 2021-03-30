@@ -710,6 +710,9 @@ module.exports = function($window) {
 	}
 	function onremove(vnode) {
 		if (typeof vnode.tag !== "string" && typeof vnode.state.onremove === "function") callHook.call(vnode.state.onremove, vnode)
+		// removing these double-checks in the vnode attrs would make life easier elsewhere
+		// (e.g., passing attributes through to children)
+		// . . . would it cause any issues?
 		if (vnode.attrs && typeof vnode.attrs.onremove === "function") callHook.call(vnode.attrs.onremove, vnode)
 		if (typeof vnode.tag !== "string") {
 			if (vnode.instance != null) onremove(vnode.instance)
