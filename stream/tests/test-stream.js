@@ -4,6 +4,46 @@ var o = require("ospec")
 var Stream = require("../stream")
 
 o.spec("stream", function() {
+	o.spec('timestreams', () => {
+		o('after', function (done) {
+			const hits = [];
+			const timer = Stream.after(5);
+			const dep = timer.map(timestamp => hits.push(timestamp));
+			setTimeout(() => {
+				timer.end();
+				o(hits.length).equals(1);
+				done();
+			}, 20);
+		});
+
+		o('after.end', function (done) {
+			const hits = [];
+			const timer = Stream.after(5);
+			const dep = timer.map(timestamp => hits.push(timestamp));
+			timer.end();
+			setTimeout(() => {
+				o(hits.length).equals(0);
+				done();
+			}, 10);
+		});
+
+		o('every', function (done) {
+			const hits = [];
+			const timer = Stream.every(5);
+			const dep = timer.map(timestamp => hits.push(timestamp));
+			Stream.after(19).map(() => {
+				timer.end();
+				o(hits.length).equals(3);
+
+				Stream.after(12).map(() => {
+					o(hits.length).equals(3);
+					done();
+				});
+			});
+		});
+	});
+
+
 	o.spec("stream", function() {
 		o("works as getter/setter", function() {
 			var stream = Stream(1)

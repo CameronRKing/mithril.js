@@ -9,6 +9,9 @@ Stream.merge = merge
 Stream.combine = combine
 Stream.scanMerge = scanMerge
 Stream["fantasy-land/of"] = Stream
+Stream.every = every;
+Stream.after = after;
+
 
 var warnedHalt = false
 Object.defineProperty(Stream, "HALT", {
@@ -91,8 +94,9 @@ function Stream(value) {
 	}
 
 	Object.defineProperty(stream, "end", {
-		get: function() { return end || createEnd() }
-	})
+		get: function() { return end || createEnd() },
+		set: function(val) { end = val; return end; }
+	}, )
 
 	return stream
 }
@@ -174,6 +178,22 @@ function lift() {
 
 function open(s) {
 	return s._state === "pending" || s._state === "active" || s._state === "changing"
+}
+
+function every(ms) {
+	const str = Stream();
+	const oldEnd = str.end.bind(str);
+	const id = setInterval(() => str(Date.now()), ms);
+	str.end = () => { oldEnd(); clearInterval(id); };
+	return str;
+}
+
+function after(ms) {
+	const str = Stream();
+	const oldEnd = str.end.bind(str);
+	const id = setTimeout(() => str(Date.now()), ms);
+	str.end = () => { oldEnd(); clearTimeout(id); }
+	return str;
 }
 
 if (typeof module !== "undefined") module["exports"] = Stream
