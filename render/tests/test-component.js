@@ -4,6 +4,7 @@ var o = require("ospec")
 var components = require("../../test-utils/components")
 var domMock = require("../../test-utils/domMock")
 var vdom = require("../../render/render")
+const stream = require('../../stream/stream');
 
 o.spec("component", function() {
 	var $window, root, render
@@ -13,6 +14,47 @@ o.spec("component", function() {
 
 		render = vdom($window)
 	})
+
+	o.spec('Extensions', () => {
+		o('sync() copies non-stream attributes from vnode to state', () => {
+			const vnode = {
+				tag: { id: 'test', view() {} },
+				attrs: { first: 'yes!' }
+			}
+			render(root, [vnode]);
+
+			o(vnode.state.first).equals(undefined);
+			vnode.state.sync('first'); 
+			o(vnode.state.first).equals('yes!');
+		});
+
+		o('sync() forwards stream attributes from vnode to state', () => {
+			const vnode = {
+				tag: { id: 'test', view() {} },
+				attrs: { first: stream('yes!') }
+			}
+			render(root, [vnode]);
+			
+			o(vnode.state.first).equals(undefined);
+			vnode.state.sync('first'); 
+			o(vnode.state.first()).equals('yes!');
+
+			// it's not the same stream
+			o(vnode.state.first).notEquals(vnode.attrs.first);
+
+			// but they are in sync
+			vnode.attrs.first('no!');
+			o(vnode.state.first()).equals('no!');
+
+			// dependent streams still work when the source stream is replaced
+			const dependent = vnode.state.first.map(val => val + '-dependent');
+			o(dependent()).equals('no!-dependent');
+
+			vnode.attrs.first = stream('maybe?');
+			vnode.state.sync('first');
+			o(dependent()).equals('maybe?-dependent');
+		});
+	});
 
 	components.forEach(function(cmp){
 		o.spec(cmp.kind, function(){

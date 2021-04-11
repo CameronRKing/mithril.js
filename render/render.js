@@ -1,6 +1,7 @@
 "use strict"
 
 var Vnode = require("../render/vnode")
+var stream = require("../stream/stream")
 
 module.exports = function($window) {
 	var $doc = $window && $window.document
@@ -140,10 +141,40 @@ module.exports = function($window) {
 		var sentinel
 		if (typeof vnode.tag.view === "function") {
 			vnode.state = Object.create(vnode.tag)
+			const sync = function(source, receiver, ...toSync) {
+				toSync.forEach(key => {
+					if (this.tracked[key] !== source[key]) {
+						const prop = this.tracked[key] = source[key];
+
+						if (this.synced[key]) {
+							this.synced[key].end();
+							delete this.synced[key];
+						}
+
+						// streams aren't copied over,
+						// but instead forwarded through an intermediary
+						// this is so dependent streams in receiver can be declared once
+						// yet the prop streams they depend on can be switched out at runtime
+						if (prop instanceof stream.constructor) {
+							if (!receiver[key] || !receiver[key] instanceof stream.constructor) {
+								receiver[key] = stream();
+							}
+							this.synced[key] = prop.map(receiver[key]);
+						} else {
+							receiver[key] = prop;
+						}
+					}
+				});
+			};
+			sync.tracked = {};
+			sync.synced = {};
+			vnode.state.sync = sync.bind(sync, vnode.attrs, vnode.state);
+
 			sentinel = vnode.state.view
 			if (sentinel.$$reentrantLock$$ != null) return
 			sentinel.$$reentrantLock$$ = true
 		} else {
+			// don't fully understand what this is for
 			vnode.state = void 0
 			sentinel = vnode.tag
 			if (sentinel.$$reentrantLock$$ != null) return

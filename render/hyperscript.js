@@ -100,8 +100,7 @@ function hyperscript(selector) {
 		// snowpack adds a query string to file names, for cache-busting, I expect
 		e.stack = e.stack.replace(/\?mtime=\d+/, '');
 		const match = e.stack.match(/\w+\.m\.js:\d+:\d+/);
-		if (!match) console.log(e.stack);
-		else vnode.meta = { src: match[0] };
+		if (match) vnode.meta = { src: match[0] };
 	}
 
 	if (typeof selector === "string") {
