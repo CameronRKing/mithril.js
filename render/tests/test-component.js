@@ -65,6 +65,49 @@ o.spec("component", function() {
 			o(vnode.tag.setup.args[0]).equals(vnode);
 			o(vnode.tag.setup.args.length).equals(1);
 		});
+
+		o('streams created in setup() are invisibly torn down after onremove', () => {
+			const vnode = {
+				tag: {
+					view() {},
+					setup(vnode) {
+						vnode.state.stream = stream(5);
+					},
+					onremove(vnode) {
+						o(vnode.state.stream._state).notEquals('ended');
+					}
+				},
+			};
+
+			render(root, [vnode]);
+
+			vnode.state.onremove(vnode);
+
+			o(vnode.state.stream._state).equals('ended');
+		});
+
+		o('streams created in setup() create an onremove if there is none', function (done) {
+			const vnode = {
+				tag: {
+					view() {},
+					setup(vnode) {
+						vnode.state.stream = stream(5);
+						vnode.state.timer = stream.every(1);
+					}
+				},
+			};
+
+			render(root, [vnode]);
+
+			stream.after(5).map(() => {
+				vnode.state.onremove(vnode);
+
+				o(vnode.state.timer._state).equals('ended');
+
+				done();				
+			});
+
+		})
 	});
 
 	components.forEach(function(cmp){

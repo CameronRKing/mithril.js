@@ -191,16 +191,16 @@ function open(s) {
 function every(ms) {
 	const str = Stream();
 	const id = setInterval(() => str(Date.now()), ms);
-	const oldEnd = str.end.bind(str);
-	str.end = () => { oldEnd(); clearInterval(id); };
+	const oldEnd = str.end;
+	str.end = (val) => { oldEnd(val); clearInterval(id); };
 	return str;
 }
 
 function after(ms) {
 	const str = Stream();
 	const id = setTimeout(() => str(Date.now()), ms);
-	const oldEnd = str.end.bind(str);
-	str.end = () => { oldEnd(); clearTimeout(id); }
+	const oldEnd = str.end;
+	str.end = (val) => { oldEnd(val); clearTimeout(id); }
 	return str;
 }
 

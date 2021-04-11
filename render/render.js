@@ -182,7 +182,19 @@ module.exports = function($window) {
 			vnode.state = (vnode.tag.prototype != null && typeof vnode.tag.prototype.view === "function") ? new vnode.tag(vnode) : vnode.tag(vnode)
 		}
 		if (typeof vnode.state.setup === 'function') {
+			stream.intercept();
 			callHook.call(vnode.state.setup, vnode);
+			const captured = stream.stopIntercept();
+
+			if (captured.length && typeof vnode.state.onremove === 'function') {
+				const oldRemove = vnode.state.onremove;
+				vnode.state.onremove = function(vnode) {
+					callHook.call(oldRemove, vnode);
+					captured.forEach(stream => stream.end(true));
+				}
+			} else {
+				vnode.state.onremove = () => captured.forEach(stream => stream.end(true));
+			}
 		}
 
 		initLifecycle(vnode.state, vnode, hooks)
