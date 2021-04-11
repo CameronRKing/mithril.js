@@ -11,6 +11,8 @@ Stream.scanMerge = scanMerge
 Stream["fantasy-land/of"] = Stream
 Stream.every = every;
 Stream.after = after;
+Stream.intercept = intercept.bind(intercept);
+Stream.stopIntercept = stopIntercept.bind(intercept);
 
 
 var warnedHalt = false
@@ -43,6 +45,8 @@ function Stream(value) {
 		return value
 	}
 
+	if (isIntercepting) capturedStreams.push(stream);
+
 	stream.constructor = Stream
 	stream._state = arguments.length && value !== Stream.SKIP ? "active" : "pending"
 	stream._parents = []
@@ -68,6 +72,9 @@ function Stream(value) {
 
 	var end
 	function createEnd() {
+		// don't want to intercept end streams
+		const interceptCache = isIntercepting;
+		isIntercepting = false;
 		end = Stream()
 		end.map(function(value) {
 			if (value === true) {
@@ -77,6 +84,7 @@ function Stream(value) {
 			}
 			return value
 		})
+		isIntercepting = interceptCache;
 		return end
 	}
 
@@ -182,18 +190,32 @@ function open(s) {
 
 function every(ms) {
 	const str = Stream();
-	const oldEnd = str.end.bind(str);
 	const id = setInterval(() => str(Date.now()), ms);
+	const oldEnd = str.end.bind(str);
 	str.end = () => { oldEnd(); clearInterval(id); };
 	return str;
 }
 
 function after(ms) {
 	const str = Stream();
-	const oldEnd = str.end.bind(str);
 	const id = setTimeout(() => str(Date.now()), ms);
+	const oldEnd = str.end.bind(str);
 	str.end = () => { oldEnd(); clearTimeout(id); }
 	return str;
+}
+
+var isIntercepting = false,
+	capturedStreams = [];
+// captures all streams created from now till stopIntercept()
+function intercept() {
+	isIntercepting = true;
+	capturedStreams = [];
+}
+
+// returns all streams created since intercept()
+function stopIntercept() {
+	isIntercepting = false;
+	return capturedStreams;
 }
 
 if (typeof module !== "undefined") module["exports"] = Stream

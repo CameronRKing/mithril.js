@@ -43,6 +43,24 @@ o.spec("stream", function() {
 		});
 	});
 
+	o.spec('interception', () => {
+		o('intercept', () => {
+			Stream.intercept();
+
+			const [one, two, three] = [Stream(), Stream.every(10), Stream.after(5)];
+
+			const captured = Stream.stopIntercept();
+
+			o(captured.length).equals(3);
+			o(captured[0]).equals(one);
+			o(captured[1]).equals(two);
+			o(captured[2]).equals(three);
+
+			two.end();
+			three.end();
+		});
+	})
+
 
 	o.spec("stream", function() {
 		o("works as getter/setter", function() {
