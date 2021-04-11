@@ -181,6 +181,10 @@ module.exports = function($window) {
 			sentinel.$$reentrantLock$$ = true
 			vnode.state = (vnode.tag.prototype != null && typeof vnode.tag.prototype.view === "function") ? new vnode.tag(vnode) : vnode.tag(vnode)
 		}
+		if (typeof vnode.state.setup === 'function') {
+			callHook.call(vnode.state.setup, vnode);
+		}
+
 		initLifecycle(vnode.state, vnode, hooks)
 		if (vnode.attrs != null) initLifecycle(vnode.attrs, vnode, hooks)
 		vnode.instance = Vnode.normalize(callHook.call(vnode.state.view, vnode))

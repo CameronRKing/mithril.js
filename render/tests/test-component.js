@@ -54,6 +54,17 @@ o.spec("component", function() {
 			vnode.state.sync('first');
 			o(dependent()).equals('maybe?-dependent');
 		});
+
+		o('setup() runs once on component creation', () => {
+			const vnode = {
+				tag: { id: 'test', view() {}, setup: o.spy() },
+			}
+			render(root, [vnode]);
+
+			o(vnode.tag.setup.callCount).equals(1);
+			o(vnode.tag.setup.args[0]).equals(vnode);
+			o(vnode.tag.setup.args.length).equals(1);
+		});
 	});
 
 	components.forEach(function(cmp){
