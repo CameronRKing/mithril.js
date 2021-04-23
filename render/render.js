@@ -142,6 +142,8 @@ module.exports = function($window) {
 		if (typeof vnode.tag.view === "function") {
 			vnode.state = Object.create(vnode.tag)
 			const sync = function(source, receiver, ...toSync) {
+				// users can call this.sync('one', 'two') or this.sync(['one', 'two'])
+				if (toSync.length === 1 && Array.isArray(toSync[0])) toSync = toSync[0];
 				toSync.forEach(key => {
 					if (this.tracked[key] !== source[key]) {
 						const prop = this.tracked[key] = source[key];

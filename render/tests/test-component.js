@@ -28,6 +28,19 @@ o.spec("component", function() {
 			o(vnode.state.first).equals('yes!');
 		});
 
+		o('sync() accepts an array argument', () => {
+			const vnode = {
+				tag: { id: 'test', view() { } },
+				attrs: { first: 'yes!' }
+			}
+			render(root, [vnode]);
+
+			o(vnode.state.first).equals(undefined);
+			vnode.state.sync(['first']);
+			o(vnode.state.first).equals('yes!');
+
+		});
+
 		o('sync() forwards stream attributes from vnode to state', () => {
 			const vnode = {
 				tag: { id: 'test', view() {} },
