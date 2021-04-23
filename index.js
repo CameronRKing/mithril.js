@@ -21,43 +21,9 @@ m.buildPathname = require("./pathname/build")
 m.vnode = require("./render/vnode")
 m.PromisePolyfill = require("./promise/polyfill")
 m.censor = require("./util/censor")
-
-m.find = (test, node=null) => {
-    if (!node) node = document.body.vnodes[0];
-
-    if (test(node)) return node;
-
-    if (node.instance) {
-        return m.find(test, node.instance);
-    } else if (node.children && node.children.length) {
-        for (let idx = 0; idx < node.children.length; idx++) {
-            // sometimes there's a null child. don't ask me why.
-            if (node.children[idx] === null) continue;
-
-            const recurse = m.find(test, node.children[idx]);
-            if (recurse) return recurse;
-        }
-    }
-    return null;
-}
-
-m.findAll = (test, acc = [], node = null) => {
-    if (!node) node = document.body.vnodes[0];
-
-    if (test(node)) acc.push(node);
-
-    if (node.instance) {
-        m.findAll(test, acc, node.instance);
-    } else if (node.children && node.children.length) {
-        for (let idx = 0; idx < node.children.length; idx++) {
-            // sometimes there's a null child. don't ask me why.
-            if (node.children[idx] === null) continue;
-
-            m.findAll(test, acc, node.children[idx]);
-        }
-    }
-    return acc;
-}
+const { find, findAll } = require('./find/find');
+m.find = find;
+m.findAll = findAll;
 
 // stub functions to help autocomplete
 // logic is in mithil-rewrite snowpack plugin (happens at build-time)
