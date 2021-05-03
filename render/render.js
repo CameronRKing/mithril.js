@@ -167,6 +167,9 @@ module.exports = function($window) {
 						}
 					}
 				});
+				if (typeof vnode.state.onsync === 'function') {
+					callHook.call(vnode.state.onsync, vnode);
+				}
 			};
 			sync.tracked = {};
 			sync.synced = {};
@@ -188,14 +191,16 @@ module.exports = function($window) {
 			callHook.call(vnode.state.setup, vnode);
 			const captured = stream.stopIntercept();
 
-			if (captured.length && typeof vnode.state.onremove === 'function') {
-				const oldRemove = vnode.state.onremove;
-				vnode.state.onremove = function(vnode) {
-					callHook.call(oldRemove, vnode);
-					captured.forEach(stream => stream.end(true));
+			if (captured.length) {
+				if (typeof vnode.state.onremove === 'function') {
+					const oldRemove = vnode.state.onremove;
+					vnode.state.onremove = function(vnode) {
+						callHook.call(oldRemove, vnode);
+						captured.forEach(stream => stream.end(true));
+					}
+				} else {
+					vnode.state.onremove = () => captured.forEach(stream => stream.end(true));
 				}
-			} else {
-				vnode.state.onremove = () => captured.forEach(stream => stream.end(true));
 			}
 		}
 
