@@ -157,7 +157,7 @@ module.exports = function($window) {
 						// but instead forwarded through an intermediary
 						// this is so dependent streams in receiver can be declared once
 						// yet the prop streams they depend on can be switched out at runtime
-						if (prop instanceof stream.constructor) {
+						if (prop instanceof stream.constructor && prop.name === 'stream') {
 							if (!receiver[key] || !receiver[key] instanceof stream.constructor) {
 								receiver[key] = stream();
 							}
@@ -1039,7 +1039,6 @@ module.exports = function($window) {
 			// First time rendering into a node clears it out
 			if (dom.vnodes == null) dom.textContent = ""
 			vnodes = Vnode.normalizeChildren(Array.isArray(vnodes) ? vnodes : [vnodes])
-			dom.vnode = vnodes[0];
 			updateNodes(dom, dom.vnodes, vnodes, hooks, null, namespace === "http://www.w3.org/1999/xhtml" ? undefined : namespace)
 			dom.vnodes = vnodes
 			// `document.activeElement` can return null: https://html.spec.whatwg.org/multipage/interaction.html#dom-document-activeelement
