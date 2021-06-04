@@ -2,6 +2,7 @@
 
 var Vnode = require("../render/vnode")
 var stream = require("../stream/stream")
+var componentCreated = require("../render/componentcreated").run;
 
 module.exports = function($window) {
 	var $doc = $window && $window.document
@@ -141,40 +142,6 @@ module.exports = function($window) {
 		var sentinel
 		if (typeof vnode.tag.view === "function") {
 			vnode.state = Object.create(vnode.tag)
-			const sync = function(source, receiver, ...toSync) {
-				// users can call this.sync('one', 'two') or this.sync(['one', 'two'])
-				if (toSync.length === 1 && Array.isArray(toSync[0])) toSync = toSync[0];
-				toSync.forEach(key => {
-					if (this.tracked[key] !== source[key]) {
-						const prop = this.tracked[key] = source[key];
-
-						if (this.synced[key]) {
-							this.synced[key].end();
-							delete this.synced[key];
-						}
-
-						// streams aren't copied over,
-						// but instead forwarded through an intermediary
-						// this is so dependent streams in receiver can be declared once
-						// yet the prop streams they depend on can be switched out at runtime
-						if (prop instanceof stream.constructor && prop.name === 'stream') {
-							if (!receiver[key] || !receiver[key] instanceof stream.constructor) {
-								receiver[key] = stream();
-							}
-							this.synced[key] = prop.map(receiver[key]);
-						} else {
-							receiver[key] = prop;
-						}
-					}
-				});
-				if (typeof vnode.state.onsync === 'function') {
-					callHook.call(vnode.state.onsync, vnode);
-				}
-			};
-			sync.tracked = {};
-			sync.synced = {};
-			vnode.state.sync = sync.bind(sync, vnode.attrs, vnode.state);
-
 			sentinel = vnode.state.view
 			if (sentinel.$$reentrantLock$$ != null) return
 			sentinel.$$reentrantLock$$ = true
@@ -186,23 +153,8 @@ module.exports = function($window) {
 			sentinel.$$reentrantLock$$ = true
 			vnode.state = (vnode.tag.prototype != null && typeof vnode.tag.prototype.view === "function") ? new vnode.tag(vnode) : vnode.tag(vnode)
 		}
-		if (typeof vnode.state.setup === 'function') {
-			stream.intercept();
-			callHook.call(vnode.state.setup, vnode);
-			const captured = stream.stopIntercept();
 
-			if (captured.length) {
-				if (typeof vnode.state.onremove === 'function') {
-					const oldRemove = vnode.state.onremove;
-					vnode.state.onremove = function(vnode) {
-						callHook.call(oldRemove, vnode);
-						captured.forEach(stream => stream.end(true));
-					}
-				} else {
-					vnode.state.onremove = () => captured.forEach(stream => stream.end(true));
-				}
-			}
-		}
+		componentCreated(vnode, callHook);
 
 		initLifecycle(vnode.state, vnode, hooks)
 		if (vnode.attrs != null) initLifecycle(vnode.attrs, vnode, hooks)

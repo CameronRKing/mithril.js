@@ -24,6 +24,7 @@ m.censor = require("./util/censor")
 const { find, findAll } = require('./find/find');
 m.find = find;
 m.findAll = findAll;
+m.componentCreated = require('./render/componentcreated').addHandler;
 
 // stub functions to help autocomplete
 // logic is in mithil-rewrite snowpack plugin (happens at build-time)
