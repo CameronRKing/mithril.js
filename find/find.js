@@ -15,6 +15,11 @@ module.exports.find = function(node, test) {
 }
 
 module.exports.findAll = function(node, test, acc = []) {
+    // if node not given, assume one is attached to document.body
+    if (!test && typeof node === 'function') {
+        return module.exports.findAll(document.body.vnodes[0], node);
+    }
+    
     if (test(node)) acc.push(node);
 
     if (node.instance) {

@@ -31,6 +31,9 @@ m.componentCreated = require('./render/componentcreated').addHandler;
 // though a run-time version would be a fine idea too
 // (to assist in rapid experimentation/prototyping in-browser)
 m.xhtml = (str) => str
-m.cmp = (obj) => obj;
+m.cmp = (obj, cb) => {
+    if (cb) cb(obj);
+    return obj;
+};
 
 module.exports = m
