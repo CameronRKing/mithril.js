@@ -89,20 +89,6 @@ function hyperscript(selector) {
 
 	var vnode = hyperscriptVnode.apply(1, arguments)
 
-	try { throw new Error(); } catch(e) {
-		// hmm . . . I need to find a different way to do this
-		// the .m.js extension is a nice shortcut,
-		// but mithril components may be mounted wherever they need to be
-		// although, this problem would be solvable by the context API
-		// The reason I'm defining a local component in a plain .js file is to capture closure variables
-		// because I can't pass them as attrs in mount, which expects a component rather than a vnode
-
-		// snowpack adds a query string to file names, for cache-busting, I expect
-		e.stack = e.stack.replace(/\?mtime=\d+/, '');
-		const match = e.stack.match(/\w+\.m\.js:\d+:\d+/);
-		if (match) vnode.meta = { src: match[0] };
-	}
-
 	if (typeof selector === "string") {
 		vnode.children = Vnode.normalizeChildren(vnode.children)
 		if (selector !== "[") return execSelector(selectorCache[selector] || compileSelector(selector), vnode)
